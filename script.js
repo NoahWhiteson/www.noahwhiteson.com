@@ -83,7 +83,7 @@
       const distance = Math.abs(i - 2);
       const enter = smooth(-.45 + distance * .04, .55 + distance * .04, t);
       const x = (i - 2) * Math.min(width * .168, 290) * spread;
-      const y = (1 - enter) * height * 1.1 + distance * distance * height * .012 * spread - lifts[i] * height * .04;
+      const y = (1 - enter) * height * 1.1 + distance * distance * height * .012 * spread - lifts[i] * Math.min(height * .13, 115);
       const rotation = (i - 2) * 5.5 * spread * (1 - lifts[i] * .85);
       const light = foil[i];
       card.style.setProperty('--foil-x', `${50 + light.x * 35 + Math.sin(t * .8 + i) * 9}%`);
@@ -91,8 +91,9 @@
       card.style.setProperty('--glare-x', `${40 + light.x * 30}%`);
       card.style.setProperty('--glare-y', `${30 + light.y * 25}%`);
       card.style.setProperty('--glare-strength', String(.32 + lifts[i] * .3));
-      card.style.transform = mobile ? `translateY(${(1 - enter) * 70 - lifts[i] * 5}px)` : `translate(-50%,-50%) translate3d(${x}px,${y}px,0) rotateX(${(1 - enter) * 35 - light.y * 2}deg) rotateY(${light.x * 4}deg) rotateZ(${rotation}deg) scale(${.94 + enter * .06})`;
-      card.style.zIndex = String(flipped === i ? 30 : hovered === i ? 20 : 5 + i);
+      card.style.transform = mobile ? `translateY(${(1 - enter) * 70 - lifts[i] * 5}px)` : `translate(-50%,-50%) translate3d(${x}px,${y}px,0) rotateX(${(1 - enter) * 35 - light.y * 2}deg) rotateY(${light.x * 4}deg) rotateZ(${rotation}deg) scale(${.94 + enter * .06 + lifts[i] * .045})`;
+      // Hover moves within the fan; only opening a card changes its stacking order.
+      card.style.zIndex = String(flipped === i ? 30 : 5 + i);
     });
     const journey = (position - aboutTop) / height;
     chapters.forEach((chapter, i) => {
@@ -215,7 +216,7 @@
     });
     lifts.forEach((value, i) => {
       const goal = flipped === i ? 1 : hovered === i ? .65 : 0;
-      lifts[i] += (goal - value) * .14;
+      lifts[i] += (goal - value) * .10;
       if (Math.abs(goal - lifts[i]) < .002) lifts[i] = goal;
       else lifting = true;
     });
@@ -253,9 +254,9 @@
       foil[i].targetY = clamp((event.clientY - box.top) / box.height) * 2 - 1;
       request();
     }, { passive: true });
-    card.addEventListener('pointerleave', () => { hovered = -1; foil[i].targetX = foil[i].targetY = 0; request(); });
+    card.addEventListener('pointerleave', () => { if (hovered === i) hovered = -1; foil[i].targetX = foil[i].targetY = 0; request(); });
     card.addEventListener('focusin', () => { hovered = i; request(); });
-    card.addEventListener('focusout', event => { if (!card.contains(event.relatedTarget)) { hovered = -1; request(); } });
+    card.addEventListener('focusout', event => { if (!card.contains(event.relatedTarget) && hovered === i) { hovered = -1; request(); } });
     backs[i].inert = true;
     backs[i].setAttribute('aria-hidden', 'true');
   });
