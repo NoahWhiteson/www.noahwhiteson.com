@@ -128,7 +128,7 @@
     toolItems.forEach((item, i) => {
       const angle = i / toolItems.length * Math.PI * 2 + spin;
       const orbitX = Math.cos(angle) * radius * (1.3 - arrive * .3);
-      const orbitY = (i - 5.5) * toolkitHeight * .052 + Math.sin(angle) * toolkitHeight * .075 + (1 - arrive) * toolkitHeight * .72;
+      const orbitY = ((i - 5.5) * toolkitHeight * .052 + Math.sin(angle) * toolkitHeight * .075) * .72 + toolkitHeight * .07 + (1 - arrive) * toolkitHeight * .72;
       const orbitZ = Math.sin(angle) * depth;
       const lane = i < 5 ? 0 : i < 9 ? 1 : 2;
       const row = i < 5 ? i : i < 9 ? i - 5 : i - 9;
@@ -141,8 +141,7 @@
       item.style.transform = `translate(-50%,-50%) translate3d(${x}px,${y}px,${z}px) rotateZ(${(1 - unfold) * Math.cos(angle) * -7}deg) scale(${scale})`;
       item.style.zIndex = String(Math.round(z + depth + 5));
     });
-    // The heading recedes as the constellation unwraps around it.
-    toolHeading.style.transform = `translate(-50%,-50%) translateY(${-unfold * toolkitHeight * .32}px) scale(${1 - unfold * (mobile ? .2 : .57)})`;
+    // Keep the smaller heading above the orbit throughout the sequence.
     toolOrbits.style.transform = `rotate(${spin * 10}deg) scale(${1 - unfold * .25})`;
     toolOrbits.style.opacity = String((1 - unfold) * arrive);
     const labels = smooth(2.3, 2.7, journey);
