@@ -27,12 +27,12 @@
     loader.style.setProperty('--load', String(ready / fonts.length));
   }));
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-  Promise.all([wait(1450), Promise.race([Promise.all(tasks), wait(2700)])]).then(() => {
+  Promise.all([wait(1250), Promise.race([Promise.all(tasks), wait(2700)])]).then(() => {
     if (finished) return;
     loader.style.setProperty('--load', '1');
     loader.classList.add('intro-leaving');
-    setTimeout(clean, 1050);
+    setTimeout(clean, 1550);
   });
   // Even a failed font request or animation must never leave an overlay behind.
-  setTimeout(clean, 4200);
+  setTimeout(clean, 4500);
 })();
