@@ -8,6 +8,8 @@
   const manifesto = $('.manifesto'), marquee = $('.marquee > span');
   const work = $('.selected-work'), cards = $$('.card-position');
   const about = $('.about'), chapters = $$('.about-chapter');
+  const finalWords = Array.from(chapters[2].querySelectorAll('.chapter-word'));
+  const aboutLabel = $('.about .section-label'), aboutBottom = $('.about-bottom'), toolCloud = $('.toolkit-cloud');
   const header = $('.header'), footer = $('footer');
   const wave = $('.wave-track'), waveChars = $$('.wave-char');
   const seed = $('.wave-seed');
@@ -31,6 +33,7 @@
     height = window.innerHeight; width = window.innerWidth;
     heroTop = point(hero); workTop = point(work); manifestoTop = point(manifesto); aboutTop = point(about); footerTop = point(footer); waveTop = point(wave); toolkitTop = point(toolkit);
     toolkitHeight = toolkitPin.clientHeight || height;
+    toolkitTop = aboutTop + toolkitHeight * 3.85;
     const glyphWidths = waveChars.map(char => char.offsetWidth || width * .07);
     waveWidth = glyphWidths.reduce((sum, value) => sum + value, 0);
     waveSize = waveChars[0].offsetHeight || width * .15;
@@ -61,7 +64,6 @@
       return;
     }
     renderWave();
-    renderToolkit();
     const progress = clamp((position - heroTop) / (height * .8));
     frame.style.transform = `scale(${1 - progress * .13})`;
     frame.style.borderRadius = `${18 + progress * 32}px`;
@@ -116,10 +118,11 @@
         }
       });
     });
+    renderToolkit();
   }
   function renderToolkit() {
     const journey = (position - toolkitTop) / toolkitHeight;
-    const arrive = smooth(-.45, .45, journey);
+    const arrive = smooth(0, .85, journey);
     const spin = smooth(-.3, 1.85, journey) * Math.PI * 2.5;
     const unfold = smooth(1.55, 2.7, journey);
     const mobile = width <= 700;
@@ -135,13 +138,24 @@
       const flatX = mobile ? (i % 2 ? 1 : -1) * width * .235 : (lane - 1) * width * .28;
       const flatY = mobile ? toolkitHeight * (-.16 + Math.floor(i / 2) * .09) : toolkitHeight * (-.12 + row * .102);
       const x = orbitX + (flatX - orbitX) * unfold;
-      const y = orbitY + (flatY - orbitY) * unfold;
+      const y = orbitY + (flatY - orbitY) * unfold - toolkitHeight * .13 * (1 - unfold);
       const z = orbitZ * (1 - unfold);
       const scale = 1 + (1 - unfold) * (.16 + Math.sin(angle) * .12);
       item.style.transform = `translate(-50%,-50%) translate3d(${x}px,${y}px,${z}px) rotateZ(${(1 - unfold) * Math.cos(angle) * -7}deg) scale(${scale})`;
       item.style.zIndex = String(Math.round(z + depth + 5));
     });
-    // Keep the smaller heading above the orbit throughout the sequence.
+    toolCloud.style.opacity = String(smooth(0, .35, journey));
+    finalWords.forEach((word, i) => {
+      word.style.opacity = String(1 - smooth(.5 + i * .24, 1.05 + i * .24, journey));
+    });
+    if (journey >= 1.77) chapters[2].setAttribute('aria-hidden', 'true');
+    aboutLabel.style.opacity = String(1 - smooth(.15, .75, journey));
+    aboutBottom.style.opacity = String(1 - smooth(.1, .65, journey));
+    aboutBottom.inert = journey > .4;
+    const heading = smooth(1.55, 2.05, journey);
+    toolHeading.style.opacity = String(heading);
+    toolHeading.style.transform = `translate(-50%,-50%) translateY(${(1 - heading) * 16}px)`;
+    // The central words vanish in sequence while the same orbit keeps spinning.
     toolOrbits.style.transform = `rotate(${spin * 10}deg) scale(${1 - unfold * .25})`;
     toolOrbits.style.opacity = String((1 - unfold) * arrive);
     const labels = smooth(2.3, 2.7, journey);
@@ -208,9 +222,11 @@
   }
   function request() { if (!raf) raf = requestAnimationFrame(tick); }
   function reset() {
-    [frame, sculpture, ...roles, marquee, ...cards, ...chapters, ...letters.flat(), ...waveChars, seed, footer, ...toolItems, toolHeading, toolOrbits, toolCategories].forEach(el => el.removeAttribute('style'));
+    [frame, sculpture, ...roles, marquee, ...cards, ...chapters, ...letters.flat(), ...waveChars, seed, footer, toolHeading, toolOrbits, toolCategories, toolCloud, ...finalWords, aboutLabel, aboutBottom].forEach(el => el.removeAttribute('style'));
+    toolItems.forEach(item => { item.style.removeProperty('transform'); item.style.removeProperty('z-index'); });
     chapters.forEach(chapter => chapter.removeAttribute('aria-hidden'));
     footer.inert = false; footer.removeAttribute('aria-hidden');
+    aboutBottom.inert = false;
     header.classList.remove('on-dark');
   }
   function setMode() {
