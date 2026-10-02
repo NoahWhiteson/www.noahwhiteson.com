@@ -9,11 +9,11 @@
   const work = $('.selected-work'), cards = $$('.card-position');
   const about = $('.about'), chapters = $$('.about-chapter');
   const finalWords = Array.from(chapters[2].querySelectorAll('.chapter-word'));
-  const aboutLabel = $('.about .section-label'), aboutBottom = $('.about-bottom'), toolCloud = $('.toolkit-cloud');
+  const aboutLabel = $('.about .section-label'), aboutBottom = $('.about-bottom'), toolCloud = $('.toolkit-cloud-front'), rearCloud = $('.toolkit-cloud-back');
   const header = $('.header'), footer = $('footer');
   const wave = $('.wave-track'), waveChars = $$('.wave-char');
   const seed = $('.wave-seed');
-  const toolkit = $('.toolkit'), toolkitPin = $('.toolkit-pin'), toolItems = $$('.tool-brand'), toolHeading = $('.toolkit-heading'), toolOrbits = $('.toolkit-orbits'), toolCategories = $('.toolkit-categories');
+  const toolkit = $('.toolkit'), toolkitPin = $('.toolkit-pin'), toolItems = $$('.toolkit-cloud-front .tool-brand'), rearItems = $$('.toolkit-cloud-back .tool-brand'), toolHeading = $('.toolkit-heading'), toolCategories = $('.toolkit-categories');
   const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
   const letters = chapters.map(chapter => Array.from(chapter.querySelectorAll('.chapter-char')));
   const fronts = cards.map(card => card.querySelector('.card-front'));
@@ -143,8 +143,14 @@
       const scale = 1 + (1 - unfold) * (.16 + Math.sin(angle) * .12);
       item.style.transform = `translate(-50%,-50%) translate3d(${x}px,${y}px,${z}px) rotateZ(${(1 - unfold) * Math.cos(angle) * -7}deg) scale(${scale})`;
       item.style.zIndex = String(Math.round(z + depth + 5));
+      const rear = rearItems[i];
+      rear.style.transform = item.style.transform;
+      rear.style.zIndex = item.style.zIndex;
+      // The upper/back half goes behind the words; the near half stays in front.
+      item.style.visibility = z < 0 ? 'hidden' : 'visible';
+      rear.style.visibility = z < 0 ? 'visible' : 'hidden';
     });
-    toolCloud.style.opacity = String(smooth(0, .35, journey));
+    toolCloud.style.opacity = rearCloud.style.opacity = String(smooth(0, .35, journey));
     finalWords.forEach((word, i) => {
       word.style.opacity = String(1 - smooth(.5 + i * .24, 1.05 + i * .24, journey));
     });
@@ -156,8 +162,6 @@
     toolHeading.style.opacity = String(heading);
     toolHeading.style.transform = `translate(-50%,-50%) translateY(${(1 - heading) * 16}px)`;
     // The central words vanish in sequence while the same orbit keeps spinning.
-    toolOrbits.style.transform = `rotate(${spin * 10}deg) scale(${1 - unfold * .25})`;
-    toolOrbits.style.opacity = String((1 - unfold) * arrive);
     const labels = smooth(2.3, 2.7, journey);
     toolCategories.style.clipPath = `inset(${(1 - labels) * 100}% 0 0)`;
     toolCategories.style.transform = `translateY(${(1 - labels) * 18}px)`;
@@ -222,8 +226,8 @@
   }
   function request() { if (!raf) raf = requestAnimationFrame(tick); }
   function reset() {
-    [frame, sculpture, ...roles, marquee, ...cards, ...chapters, ...letters.flat(), ...waveChars, seed, footer, toolHeading, toolOrbits, toolCategories, toolCloud, ...finalWords, aboutLabel, aboutBottom].forEach(el => el.removeAttribute('style'));
-    toolItems.forEach(item => { item.style.removeProperty('transform'); item.style.removeProperty('z-index'); });
+    [frame, sculpture, ...roles, marquee, ...cards, ...chapters, ...letters.flat(), ...waveChars, seed, footer, toolHeading, toolCategories, toolCloud, rearCloud, ...finalWords, aboutLabel, aboutBottom].forEach(el => el.removeAttribute('style'));
+    [...toolItems, ...rearItems].forEach(item => { item.style.removeProperty('transform'); item.style.removeProperty('z-index'); item.style.removeProperty('visibility'); });
     chapters.forEach(chapter => chapter.removeAttribute('aria-hidden'));
     footer.inert = false; footer.removeAttribute('aria-hidden');
     aboutBottom.inert = false;
