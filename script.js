@@ -11,7 +11,7 @@
   const header = $('.header'), footer = $('footer');
   const wave = $('.wave-track'), waveChars = $$('.wave-char');
   const seed = $('.wave-seed');
-  const toolkit = $('.toolkit'), toolLanes = $$('.toolkit-lane'), toolRails = $$('.toolkit-rail');
+  const toolkit = $('.toolkit'), toolkitPin = $('.toolkit-pin'), toolLanes = $$('.toolkit-lane'), toolRails = $$('.toolkit-rail');
   const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
   const letters = chapters.map(chapter => Array.from(chapter.querySelectorAll('.chapter-char')));
   const fronts = cards.map(card => card.querySelector('.card-front'));
@@ -23,13 +23,14 @@
   let hovered = -1, flipped = -1;
   const lifts = cards.map(() => 0);
   const foil = cards.map(() => ({ x: 0, y: 0, targetX: 0, targetY: 0 }));
-  let gradientMetrics = [], waveMetrics = [], waveWidth = 0, waveSize = 0, toolWidths = [];
+  let gradientMetrics = [], waveMetrics = [], waveWidth = 0, waveSize = 0, toolkitHeight = height, toolWidths = [];
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const smooth = (a, b, v) => { const n = clamp((v - a) / (b - a)); return n * n * (3 - 2 * n); };
   const point = element => element.getBoundingClientRect().top + window.scrollY;
   function measure() {
     height = window.innerHeight; width = window.innerWidth;
     heroTop = point(hero); workTop = point(work); manifestoTop = point(manifesto); aboutTop = point(about); footerTop = point(footer); waveTop = point(wave); toolkitTop = point(toolkit);
+    toolkitHeight = toolkitPin.clientHeight || height;
     toolWidths = toolRails.map(rail => ({ full: rail.scrollWidth, window: rail.parentElement.clientWidth }));
     const glyphWidths = waveChars.map(char => char.offsetWidth || width * .07);
     waveWidth = glyphWidths.reduce((sum, value) => sum + value, 0);
@@ -118,18 +119,17 @@
     });
   }
   function renderToolkit() {
-    const journey = (position - toolkitTop) / height;
-    const sweep = smooth(-.05, 1.6, journey);
+    // Complete the entrance before starting the sideways sweep. The pinned
+    // stage uses its CSS viewport height, which remains steady as mobile chrome moves.
+    const journey = (position - toolkitTop) / toolkitHeight;
+    const sweep = smooth(.72, 2.05, journey);
     toolRails.forEach((rail, i) => {
-      const enter = smooth(-.5 + i * .12, .25 + i * .12, journey);
-      const straighten = smooth(.1, .85, journey);
+      const enter = smooth(-.2 + i * .06, .58 + i * .06, journey);
       const metric = toolWidths[i];
       const distance = Math.max(0, metric.full - metric.window);
       const x = -distance * (i === 1 ? 1 - sweep : sweep);
       rail.style.transform = `translate3d(${x}px,0,0)`;
-      rail.style.backgroundSize = `${metric.window}px 100%`;
-      rail.style.backgroundPosition = `${-x}px 50%`;
-      toolLanes[i].style.transform = `translate3d(0,${(1 - enter) * height * .7}px,0) rotateX(${(1 - straighten) * 38}deg) rotateZ(${(1 - straighten) * (i === 1 ? 5 : -5)}deg)`;
+      toolLanes[i].style.transform = `translate3d(0,${(1 - enter) * toolkitHeight * .24}px,0) rotateZ(${(1 - enter) * (i === 1 ? 2 : -2)}deg)`;
     });
   }
   function renderWave() {
@@ -225,7 +225,7 @@
   });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && flipped !== -1) flipCard(flipped, false); });
   window.addEventListener('scroll', () => { target = window.scrollY; if (!enabled) position = target; request(); }, { passive: true });
-  window.addEventListener('resize', () => { measure(); target = position = window.scrollY; request(); }, { passive: true });
+  window.addEventListener('resize', () => { measure(); target = window.scrollY; request(); }, { passive: true });
   frame.addEventListener('pointermove', event => {
     if (event.pointerType === 'touch') return;
     const box = frame.getBoundingClientRect();
