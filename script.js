@@ -11,7 +11,7 @@
   const header = $('.header'), footer = $('footer');
   const wave = $('.wave-track'), waveChars = $$('.wave-char');
   const seed = $('.wave-seed');
-  const toolkit = $('.toolkit'), toolkitPin = $('.toolkit-pin'), toolLanes = $$('.toolkit-lane'), toolRails = $$('.toolkit-rail');
+  const toolkit = $('.toolkit'), toolkitPin = $('.toolkit-pin'), toolItems = $$('.tool-brand'), toolHeading = $('.toolkit-heading'), toolOrbits = $('.toolkit-orbits'), toolCategories = $('.toolkit-categories');
   const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
   const letters = chapters.map(chapter => Array.from(chapter.querySelectorAll('.chapter-char')));
   const fronts = cards.map(card => card.querySelector('.card-front'));
@@ -23,7 +23,7 @@
   let hovered = -1, flipped = -1;
   const lifts = cards.map(() => 0);
   const foil = cards.map(() => ({ x: 0, y: 0, targetX: 0, targetY: 0 }));
-  let gradientMetrics = [], waveMetrics = [], waveWidth = 0, waveSize = 0, toolkitHeight = height, toolWidths = [];
+  let gradientMetrics = [], waveMetrics = [], waveWidth = 0, waveSize = 0, toolkitHeight = height;
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const smooth = (a, b, v) => { const n = clamp((v - a) / (b - a)); return n * n * (3 - 2 * n); };
   const point = element => element.getBoundingClientRect().top + window.scrollY;
@@ -31,7 +31,6 @@
     height = window.innerHeight; width = window.innerWidth;
     heroTop = point(hero); workTop = point(work); manifestoTop = point(manifesto); aboutTop = point(about); footerTop = point(footer); waveTop = point(wave); toolkitTop = point(toolkit);
     toolkitHeight = toolkitPin.clientHeight || height;
-    toolWidths = toolRails.map(rail => ({ full: rail.scrollWidth, window: rail.parentElement.clientWidth }));
     const glyphWidths = waveChars.map(char => char.offsetWidth || width * .07);
     waveWidth = glyphWidths.reduce((sum, value) => sum + value, 0);
     waveSize = waveChars[0].offsetHeight || width * .15;
@@ -119,18 +118,36 @@
     });
   }
   function renderToolkit() {
-    // Complete the entrance before starting the sideways sweep. The pinned
-    // stage uses its CSS viewport height, which remains steady as mobile chrome moves.
     const journey = (position - toolkitTop) / toolkitHeight;
-    const sweep = smooth(.72, 2.05, journey);
-    toolRails.forEach((rail, i) => {
-      const enter = smooth(-.2 + i * .06, .58 + i * .06, journey);
-      const metric = toolWidths[i];
-      const distance = Math.max(0, metric.full - metric.window);
-      const x = -distance * (i === 1 ? 1 - sweep : sweep);
-      rail.style.transform = `translate3d(${x}px,0,0)`;
-      toolLanes[i].style.transform = `translate3d(0,${(1 - enter) * toolkitHeight * .24}px,0) rotateZ(${(1 - enter) * (i === 1 ? 2 : -2)}deg)`;
+    const arrive = smooth(-.45, .45, journey);
+    const spin = smooth(-.3, 1.85, journey) * Math.PI * 2.5;
+    const unfold = smooth(1.55, 2.7, journey);
+    const mobile = width <= 700;
+    const radius = Math.min(width * (mobile ? .3 : .34), 530);
+    const depth = Math.min(width * .17, 280);
+    toolItems.forEach((item, i) => {
+      const angle = i / toolItems.length * Math.PI * 2 + spin;
+      const orbitX = Math.cos(angle) * radius * (1.3 - arrive * .3);
+      const orbitY = (i - 5.5) * toolkitHeight * .052 + Math.sin(angle) * toolkitHeight * .075 + (1 - arrive) * toolkitHeight * .72;
+      const orbitZ = Math.sin(angle) * depth;
+      const lane = i < 5 ? 0 : i < 9 ? 1 : 2;
+      const row = i < 5 ? i : i < 9 ? i - 5 : i - 9;
+      const flatX = mobile ? (i % 2 ? 1 : -1) * width * .235 : (lane - 1) * width * .28;
+      const flatY = mobile ? toolkitHeight * (-.16 + Math.floor(i / 2) * .09) : toolkitHeight * (-.12 + row * .102);
+      const x = orbitX + (flatX - orbitX) * unfold;
+      const y = orbitY + (flatY - orbitY) * unfold;
+      const z = orbitZ * (1 - unfold);
+      const scale = 1 + (1 - unfold) * (.16 + Math.sin(angle) * .12);
+      item.style.transform = `translate(-50%,-50%) translate3d(${x}px,${y}px,${z}px) rotateZ(${(1 - unfold) * Math.cos(angle) * -7}deg) scale(${scale})`;
+      item.style.zIndex = String(Math.round(z + depth + 5));
     });
+    // The heading recedes as the constellation unwraps around it.
+    toolHeading.style.transform = `translate(-50%,-50%) translateY(${-unfold * toolkitHeight * .32}px) scale(${1 - unfold * (mobile ? .2 : .57)})`;
+    toolOrbits.style.transform = `rotate(${spin * 10}deg) scale(${1 - unfold * .25})`;
+    toolOrbits.style.opacity = String((1 - unfold) * arrive);
+    const labels = smooth(2.3, 2.7, journey);
+    toolCategories.style.clipPath = `inset(${(1 - labels) * 100}% 0 0)`;
+    toolCategories.style.transform = `translateY(${(1 - labels) * 18}px)`;
   }
   function renderWave() {
     // A single line travels along a changing curve; its full stop reveals contact.
@@ -192,7 +209,7 @@
   }
   function request() { if (!raf) raf = requestAnimationFrame(tick); }
   function reset() {
-    [frame, sculpture, ...roles, marquee, ...cards, ...chapters, ...letters.flat(), ...waveChars, seed, footer, ...toolLanes, ...toolRails].forEach(el => el.removeAttribute('style'));
+    [frame, sculpture, ...roles, marquee, ...cards, ...chapters, ...letters.flat(), ...waveChars, seed, footer, ...toolItems, toolHeading, toolOrbits, toolCategories].forEach(el => el.removeAttribute('style'));
     chapters.forEach(chapter => chapter.removeAttribute('aria-hidden'));
     footer.inert = false; footer.removeAttribute('aria-hidden');
     header.classList.remove('on-dark');
