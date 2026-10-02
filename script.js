@@ -6,6 +6,7 @@
   const hero = $('.hero-track'), frame = $('.hero-frame'), sculpture = $('.sculpture');
   const roles = $$('.hero-role'), field = $('.color-field');
   const manifesto = $('.manifesto'), marquee = $('.marquee > span');
+  const workHeading = $('.work-heading');
   const work = $('.selected-work'), cards = $$('.card-position');
   const about = $('.about'), chapters = $$('.about-chapter');
   const finalWords = Array.from(chapters[2].querySelectorAll('.chapter-word'));
@@ -25,6 +26,7 @@
   let hovered = -1, flipped = -1;
   const lifts = cards.map(() => 0);
   const foil = cards.map(() => ({ x: 0, y: 0, targetX: 0, targetY: 0 }));
+  let headingBottom = 0, cardSizes = [];
   let gradientMetrics = [], waveMetrics = [], waveWidth = 0, waveSize = 0, toolkitHeight = height;
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const smooth = (a, b, v) => { const n = clamp((v - a) / (b - a)); return n * n * (3 - 2 * n); };
@@ -32,6 +34,8 @@
   function measure() {
     height = window.innerHeight; width = window.innerWidth;
     heroTop = point(hero); workTop = point(work); manifestoTop = point(manifesto); aboutTop = point(about); footerTop = point(footer); waveTop = point(wave); toolkitTop = point(toolkit);
+    headingBottom = (workHeading?.offsetTop || height * .1) + (workHeading?.offsetHeight || height * .2);
+    cardSizes = cards.map(card => ({ height: card.clientHeight || Math.min(420, height * .46), width: card.clientWidth || Math.min(310, Math.max(200, width * .2)) }));
     toolkitHeight = toolkitPin.clientHeight || height;
     toolkitTop = aboutTop + toolkitHeight * 3.85;
     const glyphWidths = waveChars.map(char => char.offsetWidth || width * .07);
@@ -83,7 +87,13 @@
       const distance = Math.abs(i - 2);
       const enter = smooth(-.45 + distance * .04, .55 + distance * .04, t);
       const x = (i - 2) * Math.min(width * .168, 290) * spread;
-      const y = (1 - enter) * height * 1.1 + distance * distance * height * .012 * spread - lifts[i] * Math.min(height * .13, 115);
+      const fanY = distance * distance * height * .012 * spread;
+      const centre = height * (height <= 600 ? .70 : .66);
+      const angle = Math.abs((i - 2) * 5.5 * spread) * Math.PI / 180;
+      const size = cardSizes[i];
+      const halfHeight = (size.height * Math.cos(angle) + size.width * Math.sin(angle)) * .53;
+      const clearance = Math.max(0, centre + fanY - halfHeight - headingBottom - 28);
+      const y = (1 - enter) * height * 1.1 + fanY - lifts[i] * Math.min(height * .13, 115, clearance);
       const rotation = (i - 2) * 5.5 * spread * (1 - lifts[i] * .85);
       const light = foil[i];
       card.style.setProperty('--foil-x', `${50 + light.x * 35 + Math.sin(t * .8 + i) * 9}%`);

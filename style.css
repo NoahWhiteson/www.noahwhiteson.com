@@ -52,3 +52,7 @@ footer:before{content:'';position:absolute;inset:-10%;z-index:-1;background:radi
 
 /* Rear and front projections straddle the central text plane. */
 .toolkit-depth-back{display:none}.motion .toolkit-depth-back{display:block;position:absolute;inset:0;z-index:1;perspective:1100px;perspective-origin:50% 52%;pointer-events:none;overflow:hidden}.motion .about-chapters{z-index:2}.motion .toolkit-cloud-back{will-change:opacity}.motion .toolkit-cloud-back .tool-brand{visibility:hidden}
+
+/* Leave measured space for the card lift below the work heading. */
+@media(min-width:701px){.motion .card-position{height:min(420px,46svh);top:66%}}
+@media(max-height:600px) and (min-width:701px){.motion .card-position{top:70%}.motion .work-heading{top:7svh}}
