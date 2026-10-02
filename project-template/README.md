@@ -12,4 +12,4 @@ python3 project-template/build.py
 
 The generated pages are in `projects/<slug>/index.html`. Keep the generated files committed so the site works on any static host without a build step. The portfolio's card links live in the root `index.html`.
 
-Scroll reveals and the product-preview animation respect the operating system's reduced-motion preference. Content and navigation also work without JavaScript.
+On desktop, native vertical scrolling moves a continuous horizontal ribbon. Media grows as it approaches the centre. Mobile, reduced-motion, and no-JavaScript layouts use a vertical document. Content and navigation also work without JavaScript.

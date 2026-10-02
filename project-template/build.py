@@ -9,13 +9,11 @@ for i,p in enumerate(data):
  values.update(number=f'{i+1:02}',next_number=f'{(i+1)%len(data)+1:02}')
  for key in ['slug','name','color','logo','ink','tint']:values['next_'+key]=html.escape(next_project[key],quote=True)
  values['facts']=''.join(f'<div><dt>{html.escape(k)}</dt><dd>{html.escape(v)}</dd></div>' for k,v in p['facts'])
- splits={'safesight':('Safe','sight.'),'undersphere':('Under','sphere.'),'volunteen':('Volun','teen.'),'gosteer':('Go','Steer.'),'storebase':('Store','base.')}
+ splits={'safesight':('Safe','sight'),'undersphere':('Under','sphere'),'volunteen':('Volun','teen'),'gosteer':('Go','Steer'),'storebase':('Store','base')}
  values['title_first'],values['title_last']=splits[p['slug']]
- values['logo_layers']=''.join(f'<img class="emblem-layer" style="--layer:{j}" src="../../assets/{html.escape(p["logo"])}" width="500" height="500" alt="">' for j in range(12,0,-1))
- values['statement_letters']=' '.join('<span class="statement-word">'+''.join('<span class="statement-char" aria-hidden="true">'+html.escape(c)+'</span>' for c in word)+'</span>' for word in p['headline'].split())
- note=p['note'].rstrip('.')
- values['note_letters']=''.join('<span class="ending-char">'+html.escape(c)+'</span>' for c in note)+'<span class="static-period">.</span>'
- values['features']=''.join(f'<article class="feature-chapter" data-chapter="{j}"><span class="feature-number">{j+1:02} / 03</span><h3>{html.escape(title)}</h3><p>{html.escape(copy)}</p></article>' for j,(title,copy) in enumerate(p['features']))
+ details={'safesight':('safesight-screen.webp','phone-detail','Safesight mobile app screen'),'volunteen':('volunteen-hero.png','wide-detail','Volunteen website visual'),'undersphere':('undersphere.png','game-detail','A close-up of the spherical world in Undersphere'),'gosteer':('steer-site.jpg','wallet-detail','Detail of the GoSteer chat and portfolio interface'),'storebase':('storebase-site.jpg','storage-detail','Detail of the Storebase file browser')}
+ values['detail_image'],values['detail_class'],values['detail_alt']=details[p['slug']]
+ values['features']=''.join(f'<article class="feature"><span>{j+1:02}</span><div><h3>{html.escape(title)}</h3><p>{html.escape(copy)}</p></div></article>' for j,(title,copy) in enumerate(p['features']))
  page=re.sub(r'\{\{(\w+)\}\}',lambda m:values[m[1]],template)
  folder=root/'projects'/p['slug'];folder.mkdir(parents=True,exist_ok=True);(folder/'index.html').write_text(page)
  print('Built',p['slug'])
