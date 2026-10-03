@@ -112,7 +112,17 @@
       const enter = smooth(-.62, .28, local);
       const exit = i === chapters.length - 1 ? 0 : smooth(.88, 1.68, local);
       const y = (1 - enter) * 110 - exit * 135;
-      if (chapterCopies[i]) chapterCopies[i].style.opacity = String(smooth(.1, .5, local) * (1 - exit));
+      if (chapterCopies[i]) {
+        const copyStart = .22 + Math.max(0, letters[i].length - 1) * .018;
+        const copyEnter = smooth(copyStart, copyStart + .2, local);
+        const copyLeave = i === 2 ? 0 : smooth(.86, 1.1, local);
+        const opacity = copyEnter * (1 - copyLeave);
+        const copy = chapterCopies[i];
+        copy.style.opacity = String(opacity);
+        copy.style.transform = `translate3d(0,${(1 - copyEnter) * 26 - copyLeave * 12}px,0)`;
+        copy.style.clipPath = `inset(0 0 ${(1 - copyEnter) * 100}% 0)`;
+        copy.style.visibility = opacity > .002 ? 'visible' : 'hidden';
+      }
       chapter.style.transform = `translateY(calc(-50% + ${y}vh))`;
       // The words travel into view at full opacity, then leave upward.
       chapter.style.visibility = local < -.75 || local > 1.95 && i < 2 ? 'hidden' : 'visible';
@@ -164,7 +174,12 @@
       rear.style.visibility = z < 0 ? 'visible' : 'hidden';
     });
     toolCloud.style.opacity = rearCloud.style.opacity = String(smooth(0, .35, journey));
-    if (chapterCopies[2]) chapterCopies[2].style.opacity = String(1 - smooth(.1, .65, journey));
+    if (chapterCopies[2]) {
+      const copy = chapterCopies[2];
+      const opacity = Number(copy.style.opacity) * (1 - smooth(.1, .65, journey));
+      copy.style.opacity = String(opacity);
+      copy.style.visibility = opacity > .002 ? 'visible' : 'hidden';
+    }
     finalWords.forEach((word, i) => {
       word.style.opacity = String(1 - smooth(.5 + i * .24, 1.05 + i * .24, journey));
     });
