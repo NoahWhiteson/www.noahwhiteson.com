@@ -1,68 +1,62 @@
 (() => {
-  const root = document.documentElement;
-  const journey = document.querySelector('.project-journey');
-  const track = document.querySelector('.project-track');
-    const media = [...document.querySelectorAll('.media-motion')];
-  const progress = document.querySelector('.journey-progress span');
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const desktop = matchMedia('(min-width: 761px)');
-  let horizontal = false, travel = 0, current = 0, target = 0, frame = 0, top = 0;
-  let measurements = [];
-  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
-  function measure() {
-    horizontal = desktop.matches && !reduced.matches;
-    root.classList.toggle('horizontal', horizontal);
-    track.style.transform = '';
-    media.forEach(el => el.style.transform = '');
-    top = journey.getBoundingClientRect().top + scrollY;
-    travel = horizontal ? Math.max(0, track.scrollWidth - innerWidth) : 0;
-    root.style.setProperty('--travel', `${travel}px`);
-    measurements = media.map(el => ({el, x:el.closest('.panel').offsetLeft + el.offsetLeft, width:el.offsetWidth}));
-    current = target = horizontal ? clamp(scrollY - top, 0, travel) : 0;
-    render();
-    request();
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const root = document.documentElement, reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const hero = $('.case-hero'), frame = $('.hero-frame'), sculpture = $('.project-sculpture');
+  const title = $('.hero-title'), role = $('.hero-role'), header = $('.header');
+  const showcase = $('.showcase-track'), product = $('.product-visual'), type = $('.showcase-type');
+  const story = $('.project-story'), storyMark = $('.story-mark'), storyIndex = $('.story-index'), chapters = $$('.feature-chapter');
+  const ending = $('.next-track'), chars = $$('.wave-char'), seed = $('.wave-seed'), next = $('.next-project');
+  let enabled = !reduced.matches, w = innerWidth, h = innerHeight, y = scrollY, target = y, raf = 0;
+  let heroTop=0, previewTop=0, storyTop=0, endTop=0, chapterTops=[], widths=[], glyphs=[], sentenceWidth=0, fontHeight=0;
+  let px=0,py=0,mx=0,my=0;
+  const clamp = (v,a=0,b=1) => Math.max(a,Math.min(b,v));
+  const smooth = (a,b,v) => {const t=clamp((v-a)/(b-a));return t*t*(3-2*t);};
+  const point = el => el.getBoundingClientRect().top+scrollY;
+  function measure(){
+    w=innerWidth;h=$('.next-pin').clientHeight||innerHeight;
+    heroTop=point(hero);previewTop=point(showcase);storyTop=point(story);endTop=point(ending);
+    chapterTops=chapters.map(point);widths=chars.map(c=>c.offsetWidth||w*.07);sentenceWidth=widths.reduce((a,b)=>a+b,0);fontHeight=chars[0].offsetHeight||w*.15;
+    let cursor=0;glyphs=widths.map(width=>{const x=cursor+width/2;cursor+=width;return{x,width};});
+    target=scrollY;y=target;request();
   }
-  function render() {
-    if (!horizontal) {track.style.transform = '';progress.style.transform = 'scaleX(0)';return;}
-    track.style.transform = `translate3d(${-current}px,0,0)`;
-    progress.style.transform = `scaleX(${travel ? current / travel : 0})`;
-    measurements.forEach(({el,x,width}) => {
-      const distance = clamp((x + width / 2 - current - innerWidth / 2) / innerWidth, -1.5, 1.5);
-      const scale = 1 - Math.min(.13, Math.abs(distance) * .105);
-      const shift = distance * 32;
-      el.style.transform = `translate3d(${shift}px,0,0) scale(${scale})`;
+  function render(){
+    if(!enabled)return;
+    const hp=smooth(0,.75,(y-heroTop)/h);
+    frame.style.transform=`scale(${1-hp*.12}) rotate(${-hp*1.5}deg)`;
+    sculpture.style.transform=`translate(-50%,-50%) rotateX(${-14+hp*20+my*5}deg) rotateY(${-24+hp*75+mx*9}deg) rotateZ(${-13+hp*12}deg) scale(${1+hp*.09})`;
+    title.style.transform=`translate3d(${hp*70}px,${-hp*h*.14}px,0)`;
+    role.style.transform=`translate3d(${-hp*75}px,${hp*h*.08}px,0)`;
+    header.classList.toggle('on-dark',y>heroTop+h*.85 && y<endTop+h*3);
+    const p=(y-previewTop)/h, unfold=smooth(-.65,.6,p);
+    product.style.transform=`translate3d(0,${(1-unfold)*h*.12}px,0) rotateX(${(1-unfold)*18}deg) rotateY(${(1-unfold)*-17}deg) rotateZ(${(1-unfold)*-7}deg) scale(${.68+unfold*.32})`;
+    type.style.transform=`translate3d(${-smooth(-.8,1.25,p)*w*.1}px,${-smooth(-.8,1.25,p)*h*.05}px,0)`;
+    let active=0;chapterTops.forEach((top,i)=>{if(y+h*.52>top)active=i;});
+    storyIndex.textContent=String(active+1).padStart(2,'0');
+    const sp=clamp((y-storyTop)/(Math.max(1,point(ending)-storyTop)));
+    storyMark.style.transform=`rotate(${-12+sp*45}deg) scale(${.9+sp*.2})`;
+    const j=(y-endTop)/h, travel=smooth(-.1,1.75,j), bend=smooth(.2,1.2,j), depart=smooth(1.75,2.3,j);
+    const entry=(1-smooth(-.6,-.02,j))*h*.65,shift=w*.3+travel*(sentenceWidth-w*.3);
+    const curve=x=>{const u=(x-w*.5)/w;return h*(.48+u*u*.62-(1-bend)*u*.9)+entry;};
+    chars.forEach((char,i)=>{const x=w*.5+glyphs[i].x-shift,u=(x-w*.5)/w,angle=Math.atan(h/w*(u*1.24-(1-bend)*.9))*180/Math.PI;
+      char.style.transform=`translate(-50%,-50%) translate3d(${x-depart*w*.65}px,${curve(x)-depart*h*.95}px,0) rotate(${angle-depart*18}deg)`;
+      char.style.backgroundSize=`${sentenceWidth}px 100%`;char.style.backgroundPosition=`${-glyphs[i].x+glyphs[i].width/2}px 50%`;
     });
+    const size=Math.max(12,fontHeight*.11),dotX=w*.5+sentenceWidth+size*.7-shift,fall=smooth(1.73,2.3,j);
+    const dx=dotX+(w*.5-dotX)*fall,dy=curve(dotX)+(h*.78-curve(dotX))*fall;
+    seed.style.width=seed.style.height=`${size}px`;seed.style.transform=`translate(-50%,-50%) translate3d(${dx}px,${dy}px,0)`;
+    const reveal=smooth(2.27,3,j),radius=Math.hypot(w*.5,h*.78)*1.06*reveal;
+    next.style.clipPath=`circle(${radius}px at 50% 78%)`;next.inert=reveal<.5;next.setAttribute('aria-hidden',String(reveal<.5));
+    if(reveal>.75)header.classList.remove('on-dark');
   }
-  function tick() {
-    frame = 0;
-    target = horizontal ? clamp(scrollY - top, 0, travel) : 0;
-    current += (target - current) * .115;
-    if (Math.abs(target-current) < .1) current = target;
-    render();
-    if (Math.abs(target-current) > .1) request();
+  function tick(){raf=0;y+=(target-y)*.16;mx+=(px-mx)*.09;my+=(py-my)*.09;if(Math.abs(target-y)<.1)y=target;render();if(Math.abs(target-y)>.1||Math.abs(px-mx)>.002||Math.abs(py-my)>.002)request();}
+  function request(){if(enabled&&!raf)raf=requestAnimationFrame(tick);}
+  function mode(){enabled=!reduced.matches;root.classList.toggle('motion',enabled);
+    if(!enabled){[frame,sculpture,title,role,product,type,storyMark,...chars,seed].forEach(el=>el.removeAttribute('style'));next.style.clipPath='';next.inert=false;next.removeAttribute('aria-hidden');header.classList.remove('on-dark');}
+    measure();
   }
-  function request() {if (!frame) frame = requestAnimationFrame(tick);}
-  addEventListener('scroll', request, {passive:true});
-  addEventListener('resize', measure, {passive:true});
-  reduced.addEventListener('change', measure);
-  desktop.addEventListener('change', measure);
-  document.fonts.ready.then(measure);
-  document.querySelectorAll('img').forEach(img => {if (!img.complete) img.addEventListener('load',measure,{once:true});});
-  function goToPanel(panel) {
-    scrollTo({top:horizontal ? top+panel.offsetLeft : panel.getBoundingClientRect().top+scrollY-85, behavior:reduced.matches?'instant':'smooth'});
-  }
-  document.querySelectorAll('a[href="#overview"]').forEach(link => link.addEventListener('click', event => {event.preventDefault();goToPanel(document.getElementById('overview'));}));
-  // Keyboard focus moves the ribbon to the link's panel before it is used.
-  track.addEventListener('focusin', event => {
-    if (!horizontal) return;
-    document.querySelector('.journey-window').scrollLeft = 0;
-    const panel = event.target.closest('.panel');
-    if (!panel) return;
-    const left = panel.offsetLeft, right = left + panel.offsetWidth;
-    if (left < current-40 || right > current+innerWidth+40) {
-      const position = clamp(left,0,travel);
-      scrollTo({top:top+position,behavior:'instant'});current=position;render();
-    }
-  });
-  measure();
+  addEventListener('scroll',()=>{target=scrollY;request();},{passive:true});
+  addEventListener('pointermove',e=>{px=e.clientX/innerWidth-.5;py=e.clientY/innerHeight-.5;request();},{passive:true});
+  addEventListener('resize',measure,{passive:true});reduced.addEventListener('change',mode);document.fonts.ready.then(measure);
+  next.addEventListener('focus',()=>{if(enabled){scrollTo({top:endTop+h*3.05,behavior:'instant'});target=y=scrollY;render();}});
+  mode();
 })();

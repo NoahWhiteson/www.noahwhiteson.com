@@ -1,15 +1,15 @@
 # Project pages
 
-All five detail pages use `template.html`, `../project.css`, and `../project.js`.
+All five project pages share `template.html`, `../project.css`, and `../project.js`.
 
-Edit `projects.json` to change a project's name, colours, logo, product image, summary, features, facts, or external link. Asset names refer to the portfolio's `assets/` directory. Add another entry to the list to create another page; next-project links follow the list order.
+Edit `projects.json` for the summary, features, facts, links, and original assets. The `design` mapping in `build.py` controls each project’s palette, headline, preview asset, and framing. Crop coordinates are `(x, y, width, height)` in source-image pixels; images are framed in CSS without changing the original files.
 
-Rebuild the static pages from the repository root:
+Run from the repository root:
 
 ```sh
 python3 project-template/build.py
 ```
 
-The generated pages are in `projects/<slug>/index.html`. Keep the generated files committed so the site works on any static host without a build step. The portfolio's card links live in the root `index.html`.
+Commit the generated pages in `projects/<slug>/index.html` for static hosting. Homepage card links stay in the root `index.html`.
 
-On desktop, native vertical scrolling moves a continuous horizontal ribbon. Media grows as it approaches the centre. Mobile, reduced-motion, and no-JavaScript layouts use a vertical document. Content and navigation also work without JavaScript.
+Motion follows native vertical scrolling: a layered hero mark, an unfolding product preview, and a curved sentence whose dot reveals the next project. Reduced-motion and no-JavaScript layouts keep all content and links visible in a normal vertical document.
