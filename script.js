@@ -9,6 +9,7 @@
   const workHeading = $('.work-heading');
   const work = $('.selected-work'), cards = $$('.card-position');
   const about = $('.about'), chapters = $$('.about-chapter');
+  const chapterCopies = chapters.map(chapter => chapter.querySelector('.chapter-copy'));
   const finalWords = Array.from(chapters[2].querySelectorAll('.chapter-word'));
   const aboutLabel = $('.about .section-label'), aboutBottom = $('.about-bottom'), toolCloud = $('.toolkit-cloud-front'), rearCloud = $('.toolkit-cloud-back');
   const header = $('.header'), footer = $('footer');
@@ -111,6 +112,7 @@
       const enter = smooth(-.62, .28, local);
       const exit = i === chapters.length - 1 ? 0 : smooth(.88, 1.68, local);
       const y = (1 - enter) * 110 - exit * 135;
+      if (chapterCopies[i]) chapterCopies[i].style.opacity = String(smooth(.1, .5, local) * (1 - exit));
       chapter.style.transform = `translateY(calc(-50% + ${y}vh))`;
       // The words travel into view at full opacity, then leave upward.
       chapter.style.visibility = local < -.75 || local > 1.95 && i < 2 ? 'hidden' : 'visible';
@@ -162,6 +164,7 @@
       rear.style.visibility = z < 0 ? 'visible' : 'hidden';
     });
     toolCloud.style.opacity = rearCloud.style.opacity = String(smooth(0, .35, journey));
+    if (chapterCopies[2]) chapterCopies[2].style.opacity = String(1 - smooth(.1, .65, journey));
     finalWords.forEach((word, i) => {
       word.style.opacity = String(1 - smooth(.5 + i * .24, 1.05 + i * .24, journey));
     });
@@ -237,7 +240,7 @@
   }
   function request() { if (!raf) raf = requestAnimationFrame(tick); }
   function reset() {
-    [frame, sculpture, ...roles, marquee, ...cards, ...chapters, ...letters.flat(), ...waveChars, seed, footer, toolHeading, toolCategories, toolCloud, rearCloud, ...finalWords, aboutLabel, aboutBottom].forEach(el => el.removeAttribute('style'));
+    [frame, sculpture, ...roles, marquee, ...cards, ...chapters, ...chapterCopies.filter(Boolean), ...letters.flat(), ...waveChars, seed, footer, toolHeading, toolCategories, toolCloud, rearCloud, ...finalWords, aboutLabel, aboutBottom].forEach(el => el.removeAttribute('style'));
     [...toolItems, ...rearItems].forEach(item => { item.style.removeProperty('transform'); item.style.removeProperty('z-index'); item.style.removeProperty('visibility'); });
     chapters.forEach(chapter => chapter.removeAttribute('aria-hidden'));
     footer.inert = false; footer.removeAttribute('aria-hidden');

@@ -1,4 +1,7 @@
 (() => {
+  if (typeof location !== 'undefined' && location.pathname?.endsWith('/index.html')) {
+    history.replaceState(history.state, '', location.pathname.slice(0, -10) + location.search + location.hash);
+  }
   const nav = document.querySelector('.header .nav-pill');
   const indicator = nav.querySelector('.nav-active');
   const links = [...nav.querySelectorAll('a[href^="#"]')];

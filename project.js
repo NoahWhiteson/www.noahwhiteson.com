@@ -1,4 +1,7 @@
 (() => {
+  if (typeof location !== 'undefined' && location.pathname?.endsWith('/index.html')) {
+    history.replaceState(history.state, '', location.pathname.slice(0, -10) + location.search + location.hash);
+  }
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   const root = document.documentElement, reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const hero = $('.case-hero'), frame = $('.hero-frame'), sculpture = $('.project-sculpture');
