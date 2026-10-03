@@ -285,12 +285,5 @@
   $('#year').textContent = new Date().getFullYear();
   measure(); setMode();
   document.fonts?.ready.then(() => { measure(); request(); });
-  function goToContact() {
-    if (enabled && window.location.hash === '#contact') {
-      window.scrollTo({ top: waveTop + height * 3.2, behavior: 'instant' });
-      target = position = window.scrollY; render(); request();
-    }
-  }
-  window.addEventListener('hashchange', goToContact);
-  window.addEventListener('load', () => { measure(); goToContact(); request(); });
+  window.addEventListener('load', () => { measure(); request(); });
 })();

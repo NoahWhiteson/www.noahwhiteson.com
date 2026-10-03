@@ -56,3 +56,8 @@ footer:before{content:'';position:absolute;inset:-10%;z-index:-1;background:radi
 /* Leave measured space for the card lift below the work heading. */
 @media(min-width:701px){.motion .card-position{height:min(420px,46svh);top:66%}}
 @media(max-height:600px) and (min-width:701px){.motion .card-position{top:70%}.motion .work-heading{top:7svh}}
+
+/* Navigation follows the actual pinned scenes, with a soft moving selection. */
+.work-heading h2{font-weight:400;letter-spacing:-.045em}.nav-pill{position:relative;isolation:isolate;transition:background-color .5s ease,color .5s ease,border-color .5s ease;gap:25px}.nav-pill a{z-index:1;white-space:nowrap;transition:opacity .3s ease,color .5s ease}.nav-pill a:after{display:none}.nav-pill a:hover{opacity:.65}.nav-active{position:absolute;left:0;top:6px;bottom:6px;border-radius:99px;background:#ffffff30;z-index:0;opacity:0;pointer-events:none;transition:transform .6s cubic-bezier(.22,1,.36,1),width .6s cubic-bezier(.22,1,.36,1),opacity .35s ease}.header.on-dark .nav-pill{background:#ffffff12;border-color:#ffffff20}.header.on-dark .nav-active{background:#ffffff19}
+@media(max-width:700px){.header .nav-pill{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);width:max-content;max-width:calc(100vw - 24px);padding:17px 18px;gap:16px;font-size:12px;background:#ffffff38;box-shadow:0 8px 30px #0002}.header.on-dark .nav-pill{background:#292925bd}.nav-pill sup{font-size:8px}.footer-bottom{bottom:95px}.motion footer{padding-bottom:170px}}
+@media(max-width:360px){.header .nav-pill{gap:12px;padding:16px 14px;font-size:11px}}
