@@ -16,6 +16,7 @@
   const wave = $('.wave-track'), waveChars = $$('.wave-char');
   const seed = $('.wave-seed');
   const toolkit = $('.toolkit'), toolkitPin = $('.toolkit-pin'), toolItems = $$('.toolkit-cloud-front .tool-brand'), rearItems = $$('.toolkit-cloud-back .tool-brand'), toolHeading = $('.toolkit-heading'), toolCategories = $('.toolkit-categories');
+  const toolkitMore = $('.toolkit-more');
   const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
   const letters = chapters.map(chapter => Array.from(chapter.querySelectorAll('.chapter-char')));
   const fronts = cards.map(card => card.querySelector('.card-front'));
@@ -159,7 +160,7 @@
       const lane = i < 5 ? 0 : i < 9 ? 1 : 2;
       const row = i < 5 ? i : i < 9 ? i - 5 : i - 9;
       const flatX = mobile ? (i % 2 ? 1 : -1) * width * .235 : (lane - 1) * width * .28;
-      const flatY = mobile ? toolkitHeight * (-.16 + Math.floor(i / 2) * .09) : toolkitHeight * (-.12 + row * .102);
+      const flatY = mobile ? toolkitHeight * (-.19 + Math.floor(i / 2) * .08) : toolkitHeight * (-.12 + row * .102);
       const x = orbitX + (flatX - orbitX) * unfold;
       const y = orbitY + (flatY - orbitY) * unfold - toolkitHeight * .13 * (1 - unfold);
       const z = orbitZ * (1 - unfold);
@@ -194,6 +195,12 @@
     const labels = smooth(2.3, 2.7, journey);
     toolCategories.style.clipPath = `inset(${(1 - labels) * 100}% 0 0)`;
     toolCategories.style.transform = `translateY(${(1 - labels) * 18}px)`;
+    if (toolkitMore) {
+      toolkitMore.style.opacity = String(labels);
+      toolkitMore.style.transform = `translate(-50%,${(1 - labels) * 16}px)`;
+      toolkitMore.style.visibility = labels > .01 ? 'visible' : 'hidden';
+      toolkitMore.inert = labels < .5;
+    }
   }
   function renderWave() {
     // A single line travels along a changing curve; its full stop reveals contact.
@@ -260,6 +267,7 @@
     chapters.forEach(chapter => chapter.removeAttribute('aria-hidden'));
     footer.inert = false; footer.removeAttribute('aria-hidden');
     aboutBottom.inert = false;
+    if (toolkitMore) { toolkitMore.removeAttribute('style'); toolkitMore.inert = false; }
     header.classList.remove('on-dark');
   }
   function setMode() {

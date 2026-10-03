@@ -37,3 +37,15 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Full toolkit additions
+
+Swift, C#, HTML5, Git, and GitHub icons are also from Devicon under the MIT license above. The Swift mark represents SwiftUI’s Swift ecosystem as well.
+
+- swift: https://raw.githubusercontent.com/devicons/devicon/master/icons/swift/swift-original.svg
+- csharp: https://raw.githubusercontent.com/devicons/devicon/master/icons/csharp/csharp-original.svg
+- html: https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original.svg
+- git: https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg
+- github: https://raw.githubusercontent.com/devicons/devicon/master/icons/github/github-original.svg
+
+The Google Gemini mark comes from Simple Icons under CC0: https://github.com/simple-icons/simple-icons/blob/develop/icons/googlegemini.svg. See `SIMPLE-ICONS-LICENSE.md`. Brand marks remain the property of their respective owners.
