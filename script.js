@@ -36,6 +36,14 @@
   let previousScenePosition = NaN;
   function measure() {
     previousScenePosition = NaN;
+    // Add whole sentences while preserving the separate action row.
+    backs.forEach(back => {
+      const copy = back.querySelector('p');
+      if (!copy || !copy.clientHeight) return;
+      const details = Array.from(copy.querySelectorAll('.card-detail'));
+      details.forEach(detail => { detail.hidden = false; });
+      for (let i = details.length - 1; i > 0 && copy.scrollHeight > copy.clientHeight + 1; i--) details[i].hidden = true;
+    });
     height = window.innerHeight; width = window.innerWidth;
     heroTop = point(hero); workTop = point(work); manifestoTop = point(manifesto); aboutTop = point(about); footerTop = point(footer); waveTop = point(wave); toolkitTop = point(toolkit);
     headingBottom = (workHeading?.offsetTop || height * .1) + (workHeading?.offsetHeight || height * .2);
