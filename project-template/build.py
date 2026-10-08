@@ -23,6 +23,7 @@ for i,p in enumerate(data):
  values['role_lines']='<br>'.join(map(html.escape,d['role']))
  values['intro_lines']=''.join('<span>'+html.escape(line)+'</span>' for line in d['intro'])
  values['facts']=''.join(f'<div><dt>{html.escape(k)}</dt><dd>{html.escape(v)}</dd></div>' for k,v in p['facts'])
+ values['stack']=''.join('<li>'+html.escape(tool)+'</li>' for tool in p['stack'])
  values['logo_layers']=''.join(f'<span class="logo-layer" style="--layer:{j}"></span>' for j in range(20,0,-1))
  values['features']=''.join(f'<article class="feature-chapter"><span class="feature-number">{j+1:02} / 03</span><h3>{html.escape(title)}</h3><p>{html.escape(copy)}</p></article>' for j,(title,copy) in enumerate(p['features']))
  values['wave_chars']=''.join('<span class="wave-char">'+html.escape(c)+'</span>' for c in 'On to the next one')
