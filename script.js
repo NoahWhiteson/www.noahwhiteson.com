@@ -25,7 +25,7 @@
   let heroTop = 0, workTop = 0, manifestoTop = 0, aboutTop = 0, waveTop = 0, toolkitTop = 0, footerTop = 0;
   let target = window.scrollY, position = target, raf = 0;
   let pointerX = 0, pointerY = 0, mouseX = 0, mouseY = 0;
-  let hovered = -1, flipped = -1;
+  let hovered = -1, flipped = -1, hoverOpened = -1;
   const lifts = cards.map(() => 0);
   const foil = cards.map(() => ({ x: 0, y: 0, targetX: 0, targetY: 0 }));
   let headingBottom = 0, cardSizes = [];
@@ -289,10 +289,10 @@
     measure(); target = position = window.scrollY; render(); request();
   }
   cards.forEach((card, i) => {
-    fronts[i].addEventListener('click', () => flipCard(i, true));
+    fronts[i].addEventListener('click', () => { hoverOpened = -1; flipCard(i, true); });
     backs[i].querySelector('.card-close').addEventListener('click', () => flipCard(i, false));
     backs[i].addEventListener('click', event => { if (!event.target.closest('a,button')) flipCard(i, false); });
-    card.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') { hovered = i; request(); } });
+    card.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') { hovered = i; if (flipped !== i) { hoverOpened = i; flipCard(i, true, false); } request(); } });
     card.addEventListener('pointermove', event => {
       if (!enabled || event.pointerType === 'touch') return;
       const box = card.getBoundingClientRect();
@@ -300,9 +300,9 @@
       foil[i].targetY = clamp((event.clientY - box.top) / box.height) * 2 - 1;
       request();
     }, { passive: true });
-    card.addEventListener('pointerleave', () => { if (hovered === i) hovered = -1; foil[i].targetX = foil[i].targetY = 0; request(); });
+    card.addEventListener('pointerleave', () => { if (hovered === i) hovered = -1; if (hoverOpened === i && flipped === i && !card.contains(document.activeElement)) { hoverOpened = -1; flipCard(i, false, false); } foil[i].targetX = foil[i].targetY = 0; request(); });
     card.addEventListener('focusin', () => { hovered = i; request(); });
-    card.addEventListener('focusout', event => { if (!card.contains(event.relatedTarget) && hovered === i) { hovered = -1; request(); } });
+    card.addEventListener('focusout', event => { if (!card.contains(event.relatedTarget)) { if (hovered === i) hovered = -1; if (hoverOpened === i && flipped === i) { hoverOpened = -1; flipCard(i, false, false); } request(); } });
     backs[i].inert = true;
     backs[i].setAttribute('aria-hidden', 'true');
   });
