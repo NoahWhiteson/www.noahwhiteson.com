@@ -7,7 +7,8 @@
   const hero = $('.case-hero'), frame = $('.hero-frame'), sculpture = $('.project-sculpture');
   const title = $('.hero-title'), role = $('.hero-role'), header = $('.header');
   const ending = $('.next-track'), chars = $$('.wave-char'), seed = $('.wave-seed'), next = $('.next-project');
-  let enabled = !reduced.matches, w = innerWidth, h = innerHeight, y = scrollY, target = y, raf = 0;
+  const supported=typeof CSS==='undefined'||CSS.supports('position','sticky')&&CSS.supports('clip-path','circle(1px at 50% 50%)');
+  let enabled = !reduced.matches&&supported, w = innerWidth, h = innerHeight, y = scrollY, target = y, raf = 0;
   let heroTop=0, endTop=0, widths=[], glyphs=[], sentenceWidth=0, fontHeight=0;
   let px=0,py=0,mx=0,my=0;
   const clamp = (v,a=0,b=1) => Math.max(a,Math.min(b,v));
@@ -28,7 +29,7 @@
     title.style.transform=`translate3d(${hp*70}px,${-hp*h*.14}px,0)`;
     role.style.transform=`translate3d(${-hp*75}px,${hp*h*.08}px,0)`;
     header.classList.toggle('on-dark',y>heroTop+h*.85 && y<endTop+h*3);
-    const j=(y-endTop)/h, travel=smooth(-.1,1.75,j), bend=smooth(.2,1.2,j), depart=smooth(1.75,2.3,j);
+    const j=(y-endTop)/h*1.4, travel=smooth(-.1,1.75,j), bend=smooth(.2,1.2,j), depart=smooth(1.75,2.3,j);
     const entry=(1-smooth(-.6,-.02,j))*h*.65,shift=w*.3+travel*(sentenceWidth-w*.3);
     const curve=x=>{const u=(x-w*.5)/w;return h*(.48+u*u*.62-(1-bend)*u*.9)+entry;};
     chars.forEach((char,i)=>{const x=w*.5+glyphs[i].x-shift,u=(x-w*.5)/w,angle=Math.atan(h/w*(u*1.24-(1-bend)*.9))*180/Math.PI;
@@ -42,15 +43,15 @@
     next.style.clipPath=`circle(${radius}px at 50% 78%)`;next.inert=reveal<.5;next.setAttribute('aria-hidden',String(reveal<.5));
     if(reveal>.75)header.classList.remove('on-dark');
   }
-  function tick(){raf=0;y+=(target-y)*.16;mx+=(px-mx)*.09;my+=(py-my)*.09;if(Math.abs(target-y)<.1)y=target;render();if(Math.abs(target-y)>.1||Math.abs(px-mx)>.002||Math.abs(py-my)>.002)request();}
+  let lastTime=null;function tick(time){raf=0;const dt=lastTime===null||!Number.isFinite(time)?1000/60:Math.min(64,Math.max(0,time-lastTime));lastTime=Number.isFinite(time)?time:null;const ease=1-Math.pow(.91,dt/(1000/60));y=target;mx+=(px-mx)*ease;my+=(py-my)*ease;if(Math.abs(target-y)<.1)y=target;render();if(Math.abs(target-y)>.1||Math.abs(px-mx)>.002||Math.abs(py-my)>.002)request();else lastTime=null;}
   function request(){if(enabled&&!raf)raf=requestAnimationFrame(tick);}
-  function mode(){enabled=!reduced.matches;root.classList.toggle('motion',enabled);
+  function mode(){enabled=!reduced.matches&&supported;root.classList.toggle('motion',enabled);
     if(!enabled){[frame,sculpture,title,role,...chars,seed].forEach(el=>el.removeAttribute('style'));next.style.clipPath='';next.inert=false;next.removeAttribute('aria-hidden');header.classList.remove('on-dark');}
     measure();
   }
   addEventListener('scroll',()=>{target=scrollY;request();},{passive:true});
   addEventListener('pointermove',e=>{px=e.clientX/innerWidth-.5;py=e.clientY/innerHeight-.5;request();},{passive:true});
-  addEventListener('resize',measure,{passive:true});reduced.addEventListener('change',mode);document.fonts.ready.then(measure);
-  next.addEventListener('focus',()=>{if(enabled){scrollTo({top:endTop+h*3.05,behavior:'instant'});target=y=scrollY;render();}});
+  addEventListener('resize',measure,{passive:true});if(reduced.addEventListener)reduced.addEventListener('change',mode);else reduced.addListener(mode);document.fonts?.ready?.then(measure);
+  next.addEventListener('focus',()=>{if(enabled){scrollTo({top:endTop+h*3.05/1.4,behavior:'instant'});target=y=scrollY;render();}});
   mode();
 })();

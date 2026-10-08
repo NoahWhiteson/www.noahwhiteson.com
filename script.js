@@ -33,13 +33,15 @@
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const smooth = (a, b, v) => { const n = clamp((v - a) / (b - a)); return n * n * (3 - 2 * n); };
   const point = element => element.getBoundingClientRect().top + window.scrollY;
+  let previousScenePosition = NaN;
   function measure() {
+    previousScenePosition = NaN;
     height = window.innerHeight; width = window.innerWidth;
     heroTop = point(hero); workTop = point(work); manifestoTop = point(manifesto); aboutTop = point(about); footerTop = point(footer); waveTop = point(wave); toolkitTop = point(toolkit);
     headingBottom = (workHeading?.offsetTop || height * .1) + (workHeading?.offsetHeight || height * .2);
     cardSizes = cards.map(card => ({ height: card.clientHeight || Math.min(420, height * .46), width: card.clientWidth || Math.min(310, Math.max(200, width * .2)) }));
     toolkitHeight = toolkitPin.clientHeight || height;
-    toolkitTop = aboutTop + toolkitHeight * 3.85;
+    toolkitTop = aboutTop + toolkitHeight * 3.85 / 1.35;
     const glyphWidths = waveChars.map(char => char.offsetWidth || width * .07);
     waveWidth = glyphWidths.reduce((sum, value) => sum + value, 0);
     waveSize = waveChars[0].offsetHeight || width * .15;
@@ -69,7 +71,9 @@
       });
       return;
     }
-    renderWave();
+    const sceneChanged = position !== previousScenePosition;
+    previousScenePosition = position;
+    if (sceneChanged) renderWave();
     const progress = clamp((position - heroTop) / (height * .8));
     frame.style.transform = `scale(${1 - progress * .13})`;
     frame.style.borderRadius = `${18 + progress * 32}px`;
@@ -103,11 +107,12 @@
       card.style.setProperty('--glare-x', `${40 + light.x * 30}%`);
       card.style.setProperty('--glare-y', `${30 + light.y * 25}%`);
       card.style.setProperty('--glare-strength', String(.32 + lifts[i] * .3));
-      card.style.transform = mobile ? `translateY(${(1 - enter) * 70 - lifts[i] * 5}px)` : `translate(-50%,-50%) translate3d(${x}px,${y}px,0) rotateX(${(1 - enter) * 35 - light.y * 2}deg) rotateY(${light.x * 4}deg) rotateZ(${rotation}deg) scale(${.94 + enter * .06 + lifts[i] * .045})`;
+      card.style.transform = mobile ? `translateY(${(1 - enter) * 70 - lifts[i] * 5}px)` : `translate(-50%,-50%) translate(${Math.round(x)}px,${Math.round(y)}px) rotate(${flipped === i ? 0 : rotation}deg)`;
       // Hover moves within the fan; only opening a card changes its stacking order.
       card.style.zIndex = String(flipped === i ? 30 : 5 + i);
     });
-    const journey = (position - aboutTop) / height;
+    if (sceneChanged) {
+    const journey = (position - aboutTop) / height * 1.35;
     chapters.forEach((chapter, i) => {
       const local = journey - .3 - i * 1.45;
       const enter = smooth(-.62, .28, local);
@@ -143,9 +148,10 @@
       });
     });
     renderToolkit();
+    }
   }
   function renderToolkit() {
-    const journey = (position - toolkitTop) / toolkitHeight;
+    const journey = (position - toolkitTop) / toolkitHeight * 1.35;
     const arrive = smooth(0, .85, journey);
     const spin = smooth(-.3, 1.85, journey) * Math.PI * 2.5;
     const unfold = smooth(1.55, 2.7, journey);
@@ -165,7 +171,7 @@
       const y = orbitY + (flatY - orbitY) * unfold - toolkitHeight * .13 * (1 - unfold);
       const z = orbitZ * (1 - unfold);
       const scale = 1 + (1 - unfold) * (.16 + Math.sin(angle) * .12);
-      item.style.transform = `translate(-50%,-50%) translate3d(${x}px,${y}px,${z}px) rotateZ(${(1 - unfold) * Math.cos(angle) * -7}deg) scale(${scale})`;
+      item.style.transform = `translate(-50%,-50%) translate(${Math.round(x)}px,${Math.round(y)}px) rotate(${(1 - unfold) * Math.cos(angle) * -7}deg)`;
       item.style.zIndex = String(Math.round(z + depth + 5));
       const rear = rearItems[i];
       rear.style.transform = item.style.transform;
@@ -204,7 +210,7 @@
   }
   function renderWave() {
     // A single line travels along a changing curve; its full stop reveals contact.
-    const journey = (position - waveTop) / height;
+    const journey = (position - waveTop) / height * 1.4;
     const travel = smooth(-.1, 1.9, journey);
     const bend = smooth(.2, 1.35, journey);
     const depart = smooth(1.9, 2.45, journey);
@@ -239,26 +245,30 @@
     footer.setAttribute('aria-hidden', String(reveal < .5));
     if (reveal > .75) header.classList.remove('on-dark');
   }
-  function tick() {
-    position += (target - position) * .16;
-    mouseX += (pointerX - mouseX) * .09;
-    mouseY += (pointerY - mouseY) * .09;
+  let lastTime = null;
+  function tick(time) {
+    const dt = lastTime === null || !Number.isFinite(time) ? 1000 / 60 : Math.min(64, Math.max(0, time - lastTime));
+    lastTime = Number.isFinite(time) ? time : null;
+    const ease = rate => 1 - Math.pow(1 - rate, dt / (1000 / 60));
+    position = target;
+    mouseX += (pointerX - mouseX) * ease(.09);
+    mouseY += (pointerY - mouseY) * ease(.09);
     let lifting = false;
     foil.forEach(light => {
-      light.x += (light.targetX - light.x) * .14;
-      light.y += (light.targetY - light.y) * .14;
+      light.x += (light.targetX - light.x) * ease(.14);
+      light.y += (light.targetY - light.y) * ease(.14);
       if (Math.abs(light.targetX - light.x) > .002 || Math.abs(light.targetY - light.y) > .002) lifting = true;
     });
     lifts.forEach((value, i) => {
       const goal = flipped === i ? 1 : hovered === i ? .65 : 0;
-      lifts[i] += (goal - value) * .10;
+      lifts[i] += (goal - value) * ease(.10);
       if (Math.abs(goal - lifts[i]) < .002) lifts[i] = goal;
       else lifting = true;
     });
     if (Math.abs(target - position) < .15) position = target;
     render();
     if (enabled && (Math.abs(target - position) > .15 || Math.abs(pointerX - mouseX) > .002 || Math.abs(pointerY - mouseY) > .002 || lifting)) raf = requestAnimationFrame(tick);
-    else raf = 0;
+    else { raf = 0; lastTime = null; }
   }
   function request() { if (!raf) raf = requestAnimationFrame(tick); }
   function reset() {
@@ -271,7 +281,7 @@
     header.classList.remove('on-dark');
   }
   function setMode() {
-    enabled = !preference.matches;
+    enabled = !preference.matches && (typeof CSS === 'undefined' || CSS.supports('position', 'sticky') && CSS.supports('clip-path', 'circle(1px at 50% 50%)'));
     root.classList.toggle('motion', enabled);
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
@@ -298,7 +308,8 @@
   });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && flipped !== -1) flipCard(flipped, false); });
   window.addEventListener('scroll', () => { target = window.scrollY; if (!enabled) position = target; request(); }, { passive: true });
-  window.addEventListener('resize', () => { measure(); target = window.scrollY; request(); }, { passive: true });
+  window.addEventListener('resize', () => { measure(); target = position = window.scrollY; request(); }, { passive: true });
+  window.addEventListener('pageshow', () => { measure(); target = position = window.scrollY; request(); });
   frame.addEventListener('pointermove', event => {
     if (event.pointerType === 'touch') return;
     const box = frame.getBoundingClientRect();
@@ -307,9 +318,9 @@
     request();
   }, { passive: true });
   frame.addEventListener('pointerleave', () => { pointerX = pointerY = 0; request(); });
-  preference.addEventListener('change', setMode);
+  if (preference.addEventListener) preference.addEventListener('change', setMode); else preference.addListener(setMode);
   $('#year').textContent = new Date().getFullYear();
   measure(); setMode();
-  document.fonts?.ready.then(() => { measure(); request(); });
+  document.fonts?.ready?.then(() => { measure(); request(); });
   window.addEventListener('load', () => { measure(); request(); });
 })();

@@ -16,8 +16,8 @@
       '#top':0,
       '#work':top('#work')+(motion?h*.8:-85),
       '#about':about+(motion?h*.5:-85),
-      '#toolkit':motion?about+h*6.65:top('#toolkit')-85,
-      '#contact':motion?wave+h*3.25:top('#contact')-85
+      '#toolkit':motion?about+h*6.65/1.35:top('#toolkit')-85,
+      '#contact':motion?wave+h*3.25/1.4:top('#contact')-85
     };
     active='';update();
   }
@@ -28,8 +28,8 @@
     let selected='';
     if(y>=top('#work'))selected='#work';
     if(y>=top('#about'))selected='#about';
-    if(y>=(motion?top('#about')+innerHeight*4.15:top('#toolkit')))selected='#toolkit';
-    if(y>=(motion?top('.wave-track')+innerHeight*2.65:top('#contact')))selected='#contact';
+    if(y>=(motion?top('#about')+innerHeight*4.15/1.35:top('#toolkit')))selected='#toolkit';
+    if(y>=(motion?top('.wave-track')+innerHeight*2.65/1.4:top('#contact')))selected='#contact';
     if(selected===active)return;
     active=selected;
     links.forEach(link=>{if(link.getAttribute('href')===selected)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});
@@ -59,8 +59,8 @@
   addEventListener('resize',()=>{stop();measure();},{passive:true});
   addEventListener('popstate',()=>go(location.hash||'#top'));
   addEventListener('hashchange',()=>go(location.hash||'#top'));
-  reduce.addEventListener('change',()=>{stop();measure();});
-  document.fonts.ready.then(measure);
+  const modeChanged=()=>{stop();measure();};if(reduce.addEventListener)reduce.addEventListener('change',modeChanged);else reduce.addListener(modeChanged);
+  document.fonts?.ready?.then(measure);
   addEventListener('load',()=>{measure();if(location.hash in sections)go(location.hash);});
   measure();
 })();
